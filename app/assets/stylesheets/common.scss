@@ -295,7 +295,13 @@ nav.main_menu {
   @include shade;
   .count { 
     margin-left:3px;
-    color: #aaa;
+    color: #332;
+    background: white;
+    padding: 1px 6px 2px;
+    font-weight: bold;
+    -webkit-border-radius: 9px;
+    -moz-border-radius: 9px;
+    border-radius: 9px;
   }
   .label { 
     background:$hover;
