@@ -107,7 +107,8 @@ Get gitolite source code:
 
 Setup:
 
-    sudo -u git -H /home/git/gitolite/src/gl-system-install
+    sudo -u git sh -c 'echo "PATH=\$PATH:/home/git/bin\nexport PATH" > /home/git/.profile'
+    sudo -u git -i -H /home/git/gitolite/src/gl-system-install
     sudo cp /home/gitlab/.ssh/id_rsa.pub /home/git/gitlab.pub
     sudo chmod 777 /home/git/gitlab.pub
 
@@ -158,12 +159,11 @@ Permissions:
 
 #### Setup DB
 
-    sudo -u gitlab bundle exec rake db:setup RAILS_ENV=production
-    sudo -u gitlab bundle exec rake db:seed_fu RAILS_ENV=production
+    sudo -u gitlab bundle exec rake gitlab:app:setup RAILS_ENV=production
     
 Checking status:
 
-    sudo -u gitlab bundle exec rake gitlab_status RAILS_ENV=production
+    sudo -u gitlab bundle exec rake gitlab:app:status RAILS_ENV=production
 
 
     # OUTPUT EXAMPLE
@@ -219,7 +219,7 @@ Application can be started with next command:
 Edit /etc/nginx/nginx.conf. Add next code to **http** section:
 
     upstream gitlab {
-        server unix:/tmp/gitlab.socket;
+        server unix:/home/gitlab/gitlab/tmp/sockets/gitlab.socket;
     }
 
     server {

@@ -9,6 +9,14 @@ a {
   &.btn { 
     color: $style_color;
   }
+
+  &.dark { 
+    color: $style_color;
+  }
+
+  &.lined { 
+    text-decoration:underlined; 
+  }
 }
 
 
@@ -30,6 +38,10 @@ a:focus {
 
 .vlink { 
   color: $link_color !important;
+}
+
+.dlink { 
+
 }
 
 .pills a:hover { 
@@ -65,6 +77,12 @@ a:focus {
     color:#fff;
     font-family: monospace;
   }
+}
+
+.event_label { 
+  background: #FCEEC1;
+  padding:0 2px;
+  font-family: monospace;
 }
 
 .tabs > li > a, .pills > li > a {
@@ -125,6 +143,9 @@ a:focus {
 
 .ipadded { 
   padding:20px !important;
+}
+.lborder { 
+  border-left:1px solid #eee;
 }
 .no-borders { 
   border:none;
@@ -367,12 +388,12 @@ img.lil_av {
 
 .profile_avatar_holder { 
   float:left;
-  width:90px;
-  height:90px;
+  width:60px;
+  height:60px;
   margin-right:20px;
   img { 
-    width:90px;
-    height:90px;
+    width:60px;
+    height:60px;
     background:#eee;
   }
 }
@@ -697,12 +718,6 @@ input.git_clone_url {
   width:475px;
 }
 
-.team_member_row { 
-  img { 
-    width:60px;
-  }
-}
-
 .merge-request-form-holder {
   select { 
     width:300px;
@@ -861,8 +876,6 @@ p.time {
 .dashboard_category { 
   margin-bottom:30px;
 
-
-
   h3 a { 
     color:#474D57;
 
@@ -870,6 +883,7 @@ p.time {
       text-decoration:underline;
     }
   }
+
   .dashboard_block { 
     width:840px;
     margin:auto;
@@ -877,9 +891,16 @@ p.time {
     .dash_project_item { 
       margin-bottom:10px;
       border:none;
-      &:hover { 
-        background:none;
-        h4 { color:#2FA0BB; }
+      padding:0px 5px;
+
+      .project_link {
+        color:#888;
+        &:hover {
+          color:#111;
+          .ico.project { 
+            background-position:-209px -21px;
+          }
+        }
       }
 
       h4 {
@@ -939,7 +960,6 @@ p.time {
 }
 
 .leftbar { 
-
   h5, .title { 
     padding:5px 10px;
   }
@@ -955,7 +975,7 @@ p.time {
   a:hover { 
     h4 {
       color:#111;
-      border-right:4px solid $styled_border_color;
+      background:$hover;
       .ico.project { 
         background-position:-209px -21px;
       }
@@ -1077,9 +1097,9 @@ p.time {
 }
 
 .arrow{ 
-  float: right;
   background: #E3E5EA;
-  padding: 10px;
+  padding: 5px;
+  margin-top:5px;
   border-radius: 5px;
   text-shadow: none;
   color: #999;
@@ -1164,4 +1184,10 @@ li.note {
 
 .wiki_content code, .readme code{
   background-color: inherit;
+}
+
+.team_member_show { 
+  td:first-child { 
+    color:#aaa;
+  }
 }
