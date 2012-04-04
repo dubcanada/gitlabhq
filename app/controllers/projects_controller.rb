@@ -12,8 +12,8 @@ class ProjectsController < ApplicationController
 
   def index
     @projects = current_user.projects
-    @projects = @projects.select(&:last_activity_date).sort! { |a,b| a.name.downcase <=> b.name.downcase }
-    @events = Event.where(:project_id => @projects.map(&:id)).recent.limit(40)
+    @projects = @projects.select(&:last_activity_date).sort_by(&:last_activity_date).reverse
+    @events = Event.where(:project_id => @projects.map(&:id)).recent.limit(20)
   end
 
   def new
