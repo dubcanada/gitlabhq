@@ -14,6 +14,7 @@ class Event < ActiveRecord::Base
   belongs_to :project
   belongs_to :target, :polymorphic => true
 
+  # For Hash only
   serialize :data
 
   scope :recent, order("created_at DESC")
@@ -36,7 +37,7 @@ class Event < ActiveRecord::Base
   end
 
   def push?
-    action == self.class::Pushed
+    action == self.class::Pushed && valid_push?
   end
 
   def merged?

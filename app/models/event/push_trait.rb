@@ -1,19 +1,25 @@
 module Event::PushTrait
   as_trait do
+    def valid_push?
+      data[:ref]
+    rescue => ex
+      false
+    end
+
     def tag? 
       data[:ref]["refs/tags"]
     end
 
     def new_branch?
-      data[:before] =~ /^00000/
+      commit_from =~ /^00000/
     end
 
     def new_ref?
-      data[:before] =~ /^00000/
+      commit_from =~ /^00000/
     end
 
     def rm_ref?
-      data[:after] =~ /^00000/
+      commit_to =~ /^00000/
     end
 
     def md_ref? 
@@ -43,11 +49,14 @@ module Event::PushTrait
     def tag_name
       @tag_name ||= data[:ref].gsub("refs/tags/", "")
     end
-  
+ 
+    # Max 20 commits from push DESC
     def commits
-      @commits ||= data[:commits].map do |commit|
-        project.commit(commit[:id])
-      end
+      @commits ||= data[:commits].map { |commit| project.commit(commit[:id]) }.reverse
+    end
+
+    def commits_count 
+      data[:total_commits_count] || commits.count || 0
     end
 
     def ref_type
@@ -65,13 +74,15 @@ module Event::PushTrait
     end
 
     def parent_commit
-      commits.first.prev_commit
+      project.commit(commit_from)
     rescue => ex
       nil
     end
 
     def last_commit
-      commits.last
+      project.commit(commit_to)
+    rescue => ex
+      nil
     end
 
     def push_with_commits? 
