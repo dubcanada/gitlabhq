@@ -14,6 +14,8 @@ Gitlab::Application.routes.draw do
     resources :users do 
       member do 
         put :team_update
+        put :block
+        put :unblock
       end
     end
     resources :projects, :constraints => { :id => /[^\/]+/ } do 
@@ -38,12 +40,8 @@ Gitlab::Application.routes.draw do
   get "profile/design", :to => "profile#design"
   put "profile/update", :to => "profile#update"
 
-  get "dashboard", :to => "dashboard#index"
   get "dashboard/issues", :to => "dashboard#issues"
   get "dashboard/merge_requests", :to => "dashboard#merge_requests"
-  get "dashboard/activities", :to => "dashboard#activities"
-
-  #get "profile/:id", :to => "profile#show"
 
   resources :projects, :constraints => { :id => /[^\/]+/ }, :only => [:new, :create, :index]
   resources :keys
@@ -131,5 +129,5 @@ Gitlab::Application.routes.draw do
     end
     resources :notes, :only => [:index, :create, :destroy]
   end
-  root :to => "dashboard#index"
+  root :to => "projects#index"
 end
