@@ -17,6 +17,7 @@ class Ability
       :read_project,
       :read_wiki,
       :read_issue,
+      :read_milestone,
       :read_snippet,
       :read_team_member,
       :read_merge_request,
@@ -42,10 +43,12 @@ class Ability
       :modify_merge_request,
       :admin_project,
       :admin_issue,
+      :admin_milestone,
       :admin_snippet,
       :admin_team_member,
       :admin_merge_request,
       :admin_note,
+      :accept_mr,
       :admin_wiki
     ] if project.master_access_for?(user) || project.owner == user
 

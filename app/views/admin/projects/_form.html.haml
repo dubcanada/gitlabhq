@@ -61,5 +61,10 @@
     = f.submit 'Save', :class => "btn primary"
     = link_to 'Cancel', [:admin, @admin_project], :class => "btn"
     - unless @admin_project.new_record?
-      .right
-        = link_to 'Remove Project', [:admin, @admin_project], :confirm => 'Are you sure?', :method => :delete, :class => "btn danger"
+      = link_to 'Destroy', [:admin, @admin_project], :confirm => 'Are you sure?', :method => :delete, :class => "btn danger right"
+
+:javascript
+  $(function(){
+    $('#project_owner_id').chosen();
+    new Projects();
+  })

@@ -1,11 +1,3 @@
-.project_new_holder
-  %h3 New Project
-  %hr
-  = render 'form'
-%div.ajax_loader.hide
-  %center
-    %div.padded= image_tag "ajax_loader.gif"
-    %h3.prepend-top Creating project &amp; repository. Please wait for few minutes
-
-:javascript
-  $(function(){ new Projects(); });
+%h2 New project
+%hr
+= render 'form'

@@ -1,5 +1,6 @@
 class Issue < ActiveRecord::Base
   belongs_to :project
+  belongs_to :milestone
   belongs_to :author, :class_name => "User"
   belongs_to :assignee, :class_name => "User"
   has_many :notes, :as => :noteable, :dependent => :destroy
@@ -39,6 +40,10 @@ class Issue < ActiveRecord::Base
 
   def self.open_for(user)
     opened.assigned(user)
+  end
+
+  def self.search query
+    where("title like :query", :query => "%#{query}%")
   end
 
   def today?

@@ -1,26 +1,37 @@
 - if @projects.any?
-  .row
-    .span6.right
-      %h5 Event Activity
-      = render @events
-    .span10
-      %div.leftbar.ui-box
+  .projects
+    .activities.span8
+      - if current_user.require_ssh_key?
+        .alert.alert-error.padded
+          %span
+            You wont be able to pull/push project code unless you  
+            %strong
+              = link_to new_key_path, :class => "vlink" do 
+                add new key
+            to your profile
+      - if @events.any?
+        = render @events
+      - else
+        .padded
+          %strong.cgray Projects activity will be displayed here
+    .side
+      .projects_box
         %h5
           Projects
           %small
-            (#{@projects.count})
+            (#{@projects.total_count})
           - if current_user.can_create_project?
             %span.right
               = link_to new_project_path, :class => "btn very_small info" do 
                 New Project
-        .content_list
-          - @projects.each do |project|
-            = link_to project_path(project), :class => dom_class(project) do
-              %h4
-                %span.ico.project
-                = truncate(project.name, :length => 25)
-                %span.right
-                  &rarr;
+        - @projects.each do |project|
+          = link_to project_path(project), :class => dom_class(project) do
+            %h4
+              %span.ico.project
+              = truncate(project.name, :length => 25)
+              %span.right
+                &rarr;
+        .bottom= paginate @projects, :theme => "gitlab"
 
 - else 
   %h3 Nothing here

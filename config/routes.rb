@@ -14,6 +14,8 @@ Gitlab::Application.routes.draw do
     resources :users do 
       member do 
         put :team_update
+        put :block
+        put :unblock
       end
     end
     resources :projects, :constraints => { :id => /[^\/]+/ } do 
@@ -27,7 +29,7 @@ Gitlab::Application.routes.draw do
     get 'mailer/preview_note'
     get 'mailer/preview_user_new'
     get 'mailer/preview_issue_new'
-    root :to => "users#index"
+    root :to => "dashboard#index"
   end
 
   get "errors/githost"
@@ -38,12 +40,8 @@ Gitlab::Application.routes.draw do
   get "profile/design", :to => "profile#design"
   put "profile/update", :to => "profile#update"
 
-  get "dashboard", :to => "dashboard#index"
   get "dashboard/issues", :to => "dashboard#issues"
   get "dashboard/merge_requests", :to => "dashboard#merge_requests"
-  get "dashboard/activities", :to => "dashboard#activities"
-
-  #get "profile/:id", :to => "profile#show"
 
   resources :projects, :constraints => { :id => /[^\/]+/ }, :only => [:new, :create, :index]
   resources :keys
@@ -102,6 +100,8 @@ Gitlab::Application.routes.draw do
     resources :merge_requests do 
       member do 
         get :diffs
+        get :automerge
+        get :automerge_check
       end
 
       collection do 
@@ -122,6 +122,7 @@ Gitlab::Application.routes.draw do
       end
     end
     resources :team_members
+    resources :milestones
     resources :issues do
       collection do
         post  :sort
@@ -130,5 +131,5 @@ Gitlab::Application.routes.draw do
     end
     resources :notes, :only => [:index, :create, :destroy]
   end
-  root :to => "dashboard#index"
+  root :to => "projects#index"
 end

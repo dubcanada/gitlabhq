@@ -60,7 +60,7 @@ Also read the [Read this before you submit an issue](https://github.com/gitlabhq
     sudo apt-get update
     sudo apt-get upgrade
 
-    sudo apt-get install -y git-core wget curl gcc checkinstall libxml2-dev libxslt-dev sqlite3 libsqlite3-dev libcurl4-openssl-dev libreadline-dev libc6-dev libssl-dev libmysql++-dev make build-essential zlib1g-dev libicu-dev redis-server openssh-server git-core python-dev python-pip sendmail
+    sudo apt-get install -y git-core wget curl gcc checkinstall libxml2-dev libxslt-dev sqlite3 libsqlite3-dev libcurl4-openssl-dev libreadline-dev libc6-dev libssl-dev libmysql++-dev make build-essential zlib1g-dev libicu-dev redis-server openssh-server git-core python-dev python-pip libyaml-dev sendmail
     
     # If you want to use MySQL:
     sudo apt-get install -y mysql-server mysql-client libmysqlclient-dev
@@ -107,7 +107,7 @@ Get gitolite source code:
 
 Setup:
 
-    sudo -u git sh -c 'echo "PATH=\$PATH:/home/git/bin\nexport PATH" > /home/git/.profile'
+    sudo -u git sh -c 'echo -e "PATH=\$PATH:/home/git/bin\nexport PATH" > /home/git/.profile'
     sudo -u git -i -H /home/git/gitolite/src/gl-system-install
     sudo cp /home/gitlab/.ssh/id_rsa.pub /home/git/gitlab.pub
     sudo chmod 777 /home/git/gitlab.pub
@@ -224,7 +224,7 @@ Edit /etc/nginx/nginx.conf. Add next code to **http** section:
 
     server {
         listen YOUR_SERVER_IP:80;
-        server_name gitlab.YOUR_SUBDOMAIN.com;
+        server_name gitlab.YOUR_DOMAIN.com;
         root /home/gitlab/gitlab/public;
         
         # individual nginx logs for this gitlab vhost
@@ -251,7 +251,7 @@ Edit /etc/nginx/nginx.conf. Add next code to **http** section:
 
     }
 
-mygitlab.com - change to your domain.
+gitlab.YOUR_DOMAIN.com - change to your domain.
 
 Restart nginx:
 
