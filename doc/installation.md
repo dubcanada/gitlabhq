@@ -60,7 +60,7 @@ Also read the [Read this before you submit an issue](https://github.com/gitlabhq
     sudo apt-get update
     sudo apt-get upgrade
 
-    sudo apt-get install -y git-core wget curl gcc checkinstall libxml2-dev libxslt-dev sqlite3 libsqlite3-dev libcurl4-openssl-dev libreadline-dev libc6-dev libssl-dev libmysql++-dev make build-essential zlib1g-dev libicu-dev redis-server openssh-server git-core python-dev python-pip libyaml-dev sendmail
+    sudo apt-get install -y wget curl gcc checkinstall libxml2-dev libxslt-dev sqlite3 libsqlite3-dev libcurl4-openssl-dev libreadline-dev libc6-dev libssl-dev libmysql++-dev make build-essential zlib1g-dev libicu-dev redis-server openssh-server git-core python-dev python-pip libyaml-dev sendmail
     
     # If you want to use MySQL:
     sudo apt-get install -y mysql-server mysql-client libmysqlclient-dev
@@ -284,7 +284,7 @@ Create init script in /etc/init.d/gitlab:
 
             echo -n "Starting $DESC: "
             if [ `whoami` = root ]; then
-              sudo -u gitlab sh -c "$CD_TO_APP_DIR > /dev/null 2>&1 && $START_DAEMON_PROCESS && $START_RESQUE_PROCESS"
+              sudo -u gitlab sh -l -c "$CD_TO_APP_DIR > /dev/null 2>&1 && $START_DAEMON_PROCESS && $START_RESQUE_PROCESS"
             else
               $CD_TO_APP_DIR > /dev/null 2>&1 && $START_DAEMON_PROCESS && $START_RESQUE_PROCESS
             fi
