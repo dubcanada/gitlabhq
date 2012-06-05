@@ -3,9 +3,10 @@
 - if params[:path]
   %ul.breadcrumb
     %li
+      %span.arrow
       = link_to project_commits_path(@project) do
-        = @project.code
-      %span.divider 
+        = @project.name
+      %span.divider
         \/
     %li
       %a{:href => "#"}= params[:path].split("/").join(" / ")

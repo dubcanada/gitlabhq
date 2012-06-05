@@ -1,14 +1,16 @@
-.ui-box
-  %h5
-    .cgray Team Members (#{@project.users_projects.count})
-  %ul.unstyled
+%table.admin-table
+  %thead
+    %tr
+      %th User
+      %th Permissions
+  %tbody
     - @project.users_projects.each do |up|
       = render(:partial => 'team_members/show', :locals => {:member => up})
 
 
 :javascript
   $(function(){
-    $('.repo-access-select, .project-access-select').live("change", function() { 
+    $('.repo-access-select, .project-access-select').live("change", function() {
       $(this.form).submit();
     });
   })

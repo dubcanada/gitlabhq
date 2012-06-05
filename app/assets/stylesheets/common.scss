@@ -157,14 +157,21 @@ nav.main_menu {
   background-image: -o-linear-gradient(#eee 6.6%, #dfdfdf);
   @include shade;
   .count { 
-    margin-left:3px;
-    color: #332;
-    background: white;
-    padding: 1px 6px 2px;
-    font-weight: bold;
-    -webkit-border-radius: 9px;
-    -moz-border-radius: 9px;
-    border-radius: 9px;
+    position: relative;
+	  top: -1px;
+	  display: inline-block;
+	  height: 15px;
+	  margin: 0 0 0 5px;
+	  padding: 0 8px 1px 8px;
+	  height: auto;
+	  font-size: 0.82em;
+	  line-height: 14px;
+	  text-align: center;
+	  color: #777;
+	  background: #f2f2f2;
+	  border-top: 1px solid #CCC;
+	  border-radius: 8px;
+	 -moz-border-radius: 8px;
   }
   .label { 
     background:$hover;
@@ -188,6 +195,7 @@ nav.main_menu {
       -moz-border-radius-bottomleft: 4px;
       border-top-left-radius: 4px;
       border-bottom-left-radius: 4px;
+      border-left: 0;
     }
     padding: 10px 25px;
     display: inline-block;
@@ -196,6 +204,9 @@ nav.main_menu {
     margin: 0;
     float:left;
     text-shadow:0 1px 1px white;
+    border-right: 1px solid #DDD;
+    border-left: 1px solid #EEE;
+
     &.home { 
       background: url(home_icon.PNG) no-repeat center center;
       text-indent:-9999px;
@@ -208,6 +219,9 @@ nav.main_menu {
     &.current { 
       background-color:#D5D5D5;
       border-bottom: 2px solid #474D57;
+      border-right: 1px solid #BBB;
+      border-left: 1px solid #BBB;
+      border-radius: 0 0 1px 1px;
       &:first-child{ 
         border-bottom:none;
       }
@@ -399,16 +413,6 @@ a.project-update.titled {
     top:0;
   }
 }
-/**
- * Project graph
- */
-#holder {
-  cursor: move;
-  height: 70%;
-  overflow: hidden;
-}
-
-
 
 input.git_clone_url { 
   width:325px;
@@ -434,98 +438,6 @@ input.git_clone_url {
   background:#fff !important;
 }
 
-/**
- * 
- * COMMIT SHOw
- *
- */
-.diff_file {
-  border:1px solid #CCC;
-  margin-bottom:1em;
-
-  .diff_file_header {
-    padding:5px 5px;
-    border-bottom:1px solid #CCC;
-    background: #eee;
-  }
-  .diff_file_content {
-    overflow:auto;
-    overflow-y:hidden;
-    background:#fff;
-    color:#333;
-    font-size: 12px;
-    font-family: 'Menlo', 'Courier New', 'andale mono','lucida console',monospace;
-  }
-  .diff_file_content_image {
-    background:#eee;
-    text-align:center;
-    img {
-      padding:50px;
-      max-width:400px;
-    }
-  }
-}
-
-.diff_file_content{
-  table { 
-    border:none;
-    margin:0px;
-    padding:0px;
-    tr {
-      td { 
-        font-size:12px;
-      }
-    }
-  }
-  .old_line, .new_line {
-    margin:0px;
-    padding:0px;
-    border:none;
-    background:#F7F7F7;
-    color:#aaa;
-    padding: 0px 5px;
-    border-right: 1px solid #ccc;
-    text-align:right;
-    min-width:35px;
-    max-width:35px;
-    width:35px;
-    moz-user-select: none;
-    -khtml-user-select: none;
-    user-select: none;
-    a { 
-      float:left;
-      width:35px;
-      font-weight:normal;
-      color:#aaa;
-      &:hover { 
-        text-decoration:underline;
-      }
-    }
-  }
-  .line_content { 
-    white-space:pre; 
-    height:14px;
-    margin:0px;
-    padding:0px;
-    border:none;
-    &.new { 
-      background: #CFD;
-    }
-    &.old { 
-      background: #FDD;
-    }
-    &.matched { 
-      color:#ccc;
-      background:#fafafa;
-    }
-  }
-}
-
-/** COMMIT BLOCK **/
-.commit-title{display: block;}
-.commit-title{margin-bottom: 10px}
-.commit-author, .commit-committer{display: block;color: #999; font-weight: normal; font-style: italic;}
-.commit-author strong, .commit-committer strong{font-weight: bold; font-style: normal;}
 
 /** bordered list **/
 ul.bordered-list { 
@@ -559,7 +471,12 @@ li.commit {
   }
 
   code { 
-    padding:0px;
+    padding: 2px 2px 0;
+    margin-top: -2px;
+    &:hover {
+      color: black;
+      border: 1px solid #ccc;
+    }
   }
 }
 p.time {
@@ -617,6 +534,13 @@ p.time {
   border-bottom:1px solid #ddd;
   .avatar { 
     width:32px;
+  }
+  .event_icon { 
+    float:right;
+    margin-right:2px;
+    img { 
+      width:20px;
+    }
   }
   ul { 
     margin-left:50px;
@@ -925,4 +849,64 @@ li.note {
       }
     }
   }
+}
+
+.rss-icon {
+  img {
+    width:24px;
+    vertical-align:top;
+  }
+}
+
+.automerge_widget { 
+
+  &.can_be_merged { 
+    background: #DFF0D8;
+  }
+
+  .accept_merge_request { 
+    color: #fff;
+    text-shadow: 0 1px 1px #222;
+    background: #5bb75b;;
+    &:hover { 
+      background-color: #51a351;
+      color: #fff;
+    }
+  }
+  .how_to_merge_link { 
+    @extend .primary;
+  }
+}
+
+.graph_holder { 
+  border: 1px solid #aaa;
+  padding:1px;
+
+
+  h4 { 
+    padding:0 10px;
+    border-bottom: 1px solid #bbb;
+    background:#eee;
+    background-image: -webkit-gradient(linear, 0 0, 0 30, color-stop(0.066, #eee), to(#dfdfdf));
+    background-image: -webkit-linear-gradient(#eee 6.6%, #dfdfdf);
+    background-image: -moz-linear-gradient(#eee 6.6%, #dfdfdf);
+    background-image: -o-linear-gradient(#eee 6.6%, #dfdfdf);
+  }
+
+  .graph { 
+    background: #f1f1f1;
+    cursor: move;
+    height: 70%;
+    overflow: hidden;
+  }
+
+}
+
+/* CHZN reset few styles */
+.chzn-container-single .chzn-single { 
+  background:#eee;
+  border: 1px solid #ccc;
+}
+.chzn-container-active .chzn-single { 
+  background:#fff;
 }

@@ -1,4 +1,5 @@
 class RefsController < ApplicationController
+  include Gitlab::Encode
   before_filter :project
 
   # Authorize
@@ -8,7 +9,7 @@ class RefsController < ApplicationController
   before_filter :require_non_empty_project
 
   before_filter :ref
-  before_filter :define_tree_vars, :only => [:tree, :blob]
+  before_filter :define_tree_vars, :only => [:tree, :blob, :blame]
   before_filter :render_full_content
 
   layout "project"
@@ -43,23 +44,30 @@ class RefsController < ApplicationController
         no_cache_headers
       end
     end
-  rescue
-    return render_404
   end
 
   def blob
     if @tree.is_blob?
+      if @tree.text?
+        encoding = detect_encoding(@tree.data)
+        mime_type = encoding ? "text/plain; charset=#{encoding}" : "text/plain"
+      else
+        mime_type = @tree.mime_type
+      end
+
       send_data(
         @tree.data,
-        :type => @tree.text? ? "text/plain" : @tree.mime_type,
+        :type => mime_type,
         :disposition => 'inline',
         :filename => @tree.name
       )
     else
       head(404)
     end
-  rescue
-    return render_404
+  end
+
+  def blame
+    @blame = Grit::Blob.blame(@repo, @commit.id, params[:path])
   end
 
   protected

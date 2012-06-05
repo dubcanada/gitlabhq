@@ -1,14 +1,11 @@
 require 'digest/md5'
 module ApplicationHelper
 
-  def gravatar_icon(user_email, size = 40)
+  def gravatar_icon(user_email = '', size = 40)
+    return unless user_email
     gravatar_host = request.ssl? ? "https://secure.gravatar.com" :  "http://www.gravatar.com"
     user_email.strip!
     "#{gravatar_host}/avatar/#{Digest::MD5.hexdigest(user_email.downcase)}?s=#{size}&d=identicon"
-  end
-
-  def fixed_mode?
-    true
   end
 
   def request_protocol
@@ -17,32 +14,6 @@ module ApplicationHelper
 
   def web_app_url
     "#{request_protocol}://#{GIT_HOST["host"]}/"
-  end
-
-  def body_class(default_class = nil)
-    main = content_for(:body_class).blank? ?
-      default_class :
-      content_for(:body_class)
-
-    [main, "collapsed"].join(" ")
-  end
-
-  def commit_name(project, commit)
-    if project.commit.id == commit.id
-      "master"
-    else
-      commit.id
-    end
-  end
-
-  def admin_namespace?
-    controller.class.name.split("::").first=="Admin"
-  end
-
-  def projects_namespace?
-    !current_page?(root_url) &&
-      controller.controller_name != "keys" &&
-      !admin_namespace?
   end
 
   def last_commit(project)
@@ -61,7 +32,7 @@ module ApplicationHelper
       [ "Tag", @project.tags ]
     ]
 
-    # If reference is commit id - 
+    # If reference is commit id -
     # we should add it to branch/tag selectbox
     if(@ref && !options.flatten.include?(@ref) &&
        @ref =~ /^[0-9a-zA-Z]{6,52}$/)
@@ -109,28 +80,8 @@ module ApplicationHelper
     [projects, default_nav, project_nav].flatten.to_json
   end
 
-  def project_layout
-    layout == "project"
-  end
-
-  def admin_layout
-    layout == "admin"
-  end
-
-  def profile_layout
-    layout == "profile"
-  end
-
-  def help_layout
-    controller.controller_name == "help" 
-  end
-
   def ldap_enable?
     Devise.omniauth_providers.include?(:ldap)
-  end
-
-  def layout 
-    controller.send :_layout
   end
 
   def app_theme
@@ -141,7 +92,4 @@ module ApplicationHelper
     end
   end
 
-  def string_to_utf8 str
-    Gitlabhq::Encode.utf8 str
-  end
 end
