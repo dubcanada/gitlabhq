@@ -2,7 +2,7 @@ class DashboardController < ApplicationController
   respond_to :html
 
   def index
-    @projects = current_user.projects.includes(:events).order("events.created_at DESC")
+    @projects = current_user.projects.includes(:events).order("projects.name ASC")
     @projects = @projects.page(params[:page]).per(40)
 
     @events = Event.where(:project_id => current_user.projects.map(&:id)).recent.limit(20)
