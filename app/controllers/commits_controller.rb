@@ -41,6 +41,8 @@ class CommitsController < ApplicationController
     if @commit.diffs.size > 200 && !params[:force_show_diff]
       @suppress_diff = true 
     end
+  rescue Grit::Git::GitTimeout
+    render "huge_commit"
   end
 
   def compare
@@ -61,5 +63,16 @@ class CommitsController < ApplicationController
       @diffs = project.repo.diff(younger.id, older.id) rescue []
       @commit = Commit.new(older)
     end
+  end
+
+  def patch
+    @commit = project.commit(params[:id])
+    
+    send_data(
+      @commit.to_patch,
+      :type => "text/plain",
+      :disposition => 'attachment',
+      :filename => (@commit.id.to_s + ".patch")
+    )
   end
 end

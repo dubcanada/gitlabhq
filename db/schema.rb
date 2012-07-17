@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120413135904) do
+ActiveRecord::Schema.define(:version => 20120706065612) do
 
   create_table "events", :force => true do |t|
     t.string   "target_type"
@@ -34,7 +34,6 @@ ActiveRecord::Schema.define(:version => 20120413135904) do
     t.datetime "updated_at",                      :null => false
     t.boolean  "closed",       :default => false, :null => false
     t.integer  "position",     :default => 0
-    t.boolean  "critical",     :default => false, :null => false
     t.string   "branch_name"
     t.text     "description"
     t.integer  "milestone_id"
@@ -62,8 +61,8 @@ ActiveRecord::Schema.define(:version => 20120413135904) do
     t.boolean  "closed",                              :default => false, :null => false
     t.datetime "created_at",                                             :null => false
     t.datetime "updated_at",                                             :null => false
-    t.text     "st_commits",    :limit => 4294967295
-    t.text     "st_diffs",      :limit => 4294967295
+    t.text     "st_commits",    :limit => 2147483647
+    t.text     "st_diffs",      :limit => 2147483647
     t.boolean  "merged",                              :default => false, :null => false
     t.integer  "state",                               :default => 1,     :null => false
   end
@@ -170,6 +169,8 @@ ActiveRecord::Schema.define(:version => 20120413135904) do
     t.integer  "theme_id",                              :default => 1,     :null => false
     t.string   "bio"
     t.boolean  "blocked",                               :default => false, :null => false
+    t.integer  "failed_attempts",                       :default => 0
+    t.datetime "locked_at"
   end
 
   add_index "users", ["email"], :name => "index_users_on_email", :unique => true

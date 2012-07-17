@@ -3,6 +3,8 @@ require File.join(Rails.root, "app/models/commit")
 class MergeRequest < ActiveRecord::Base
   include Upvote
 
+  BROKEN_DIFF = "--broken-diff"
+
   UNCHECKED = 1
   CAN_BE_MERGED = 2
   CANNOT_BE_MERGED = 3
@@ -20,7 +22,6 @@ class MergeRequest < ActiveRecord::Base
                 :should_remove_source_branch
 
   validates_presence_of :project_id
-  validates_presence_of :assignee_id
   validates_presence_of :author_id
   validates_presence_of :source_branch
   validates_presence_of :target_branch
@@ -34,6 +35,7 @@ class MergeRequest < ActiveRecord::Base
   delegate :name,
            :email,
            :to => :assignee,
+           :allow_nil => true,
            :prefix => true
 
   validates :title,
@@ -93,6 +95,10 @@ class MergeRequest < ActiveRecord::Base
     self.save
   end
 
+  def today?
+    Date.today == created_at.to_date
+  end
+
   def new?
     today? && created_at == updated_at
   end
@@ -104,14 +110,25 @@ class MergeRequest < ActiveRecord::Base
   def reloaded_diffs
     if open? && unmerged_diffs.any?
       self.st_diffs = unmerged_diffs
-      save
+      self.save
     end
-    diffs
+
+  rescue Grit::Git::GitTimeout
+    self.st_diffs = [BROKEN_DIFF]
+    self.save
+  end
+
+  def broken_diffs?
+    diffs == [BROKEN_DIFF]
+  end
+
+  def valid_diffs?
+    !broken_diffs?
   end
 
   def unmerged_diffs
     commits = project.repo.commits_between(target_branch, source_branch).map {|c| Commit.new(c)}
-    diffs = project.repo.diff(commits.first.prev_commit.id, commits.last.id) rescue []
+    diffs = project.repo.diff(commits.first.prev_commit.id, commits.last.id)
   end
 
   def last_commit
@@ -189,20 +206,36 @@ class MergeRequest < ActiveRecord::Base
     self.mark_as_unmergable
     false
   end
+
+  def to_raw
+    FileUtils.mkdir_p(Rails.root.join("tmp", "patches"))
+    patch_path = Rails.root.join("tmp", "patches", "merge_request_#{self.id}.patch")
+
+    from = commits.last.id
+    to = source_branch
+
+    project.repo.git.run('', "format-patch" , " > #{patch_path.to_s}", {}, ["#{from}..#{to}", "--stdout"])
+
+    patch_path
+  end
 end
 # == Schema Information
 #
 # Table name: merge_requests
 #
-#  id            :integer         not null, primary key
+#  id            :integer(4)      not null, primary key
 #  target_branch :string(255)     not null
 #  source_branch :string(255)     not null
-#  project_id    :integer         not null
-#  author_id     :integer
-#  assignee_id   :integer
+#  project_id    :integer(4)      not null
+#  author_id     :integer(4)
+#  assignee_id   :integer(4)
 #  title         :string(255)
-#  closed        :boolean         default(FALSE), not null
-#  created_at    :datetime
-#  updated_at    :datetime
+#  closed        :boolean(1)      default(FALSE), not null
+#  created_at    :datetime        not null
+#  updated_at    :datetime        not null
+#  st_commits    :text(2147483647
+#  st_diffs      :text(2147483647
+#  merged        :boolean(1)      default(FALSE), not null
+#  state         :integer(4)      default(1), not null
 #
 

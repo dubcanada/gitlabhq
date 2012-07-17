@@ -12,17 +12,34 @@
 //= require jquery.cookie
 //= require jquery.endless-scroll
 //= require jquery.highlight
+//= require jquery.waitforimages
 //= require bootstrap-modal
 //= require modernizr
 //= require chosen-jquery
-//= require raphael/raphael
+//= require raphael
 //= require branch-graph
 //= require_tree .
 
 $(document).ready(function(){
+
   $(".one_click_select").live("click", function(){
     $(this).select();
   });
+
+
+  $('body').on('ajax:complete, ajax:beforeSend, submit', 'form', function(e){
+    var buttons = $('[type="submit"]', this);
+    switch( e.type ){
+      case 'ajax:beforeSend':
+      case 'submit':
+        buttons.attr('disabled', 'disabled');
+      break;
+      case ' ajax:complete':
+      default:
+        buttons.removeAttr('disabled');
+      break;
+    }
+  })
 
   $(".account-box").mouseenter(showMenu);
   $(".account-box").mouseleave(resetMenu);
@@ -52,6 +69,14 @@ $(document).ready(function(){
       case 115:  focusSearch();
         e.preventDefault();
     }
+  });
+
+  /**
+   * Commit show suppressed diff
+   *
+   */
+  $(".supp_diff_link").bind("click", function() {
+    showDiff(this);
   });
 });
 
@@ -89,3 +114,8 @@ function showDiff(link) {
             return _chosen.apply(this, [default_options]);
     }})
 })(jQuery);
+
+
+function ajaxGet(url) { 
+  $.ajax({type: "GET", url: url, dataType: "script"}); 
+}

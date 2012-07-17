@@ -25,4 +25,15 @@ module IssuesHelper
       issue.author_name
     end
   end
+
+  def issue_css_classes issue
+    classes = "issue"
+    classes << " closed" if issue.closed
+    classes << " today" if issue.today?
+    classes
+  end
+
+  def issue_tags 
+    @project.issues.tag_counts_on(:labels).map(&:name)
+  end
 end
