@@ -7,8 +7,6 @@
 //= require jquery
 //= require jquery.ui.all
 //= require jquery_ujs
-//= require jquery.ui.selectmenu
-//= require jquery.tagify
 //= require jquery.cookie
 //= require jquery.endless-scroll
 //= require jquery.highlight
@@ -25,7 +23,6 @@ $(document).ready(function(){
   $(".one_click_select").live("click", function(){
     $(this).select();
   });
-
 
   $('body').on('ajax:complete, ajax:beforeSend, submit', 'form', function(e){
     var buttons = $('[type="submit"]', this);
@@ -52,14 +49,6 @@ $(document).ready(function(){
     }
   });
 
-  $("#issues-table .issue").live('click', function(e){
-    if(e.target.nodeName != "A" && e.target.nodeName != "INPUT") {
-      location.href = $(this).attr("url");
-      e.stopPropagation();
-      return false;
-    }
-  });
-
   /**
    * Focus search field by pressing 's' key
    */
@@ -77,6 +66,26 @@ $(document).ready(function(){
    */
   $(".supp_diff_link").bind("click", function() {
     showDiff(this);
+  });
+
+  /**
+   * Note markdown preview
+   *
+   */
+  $('#preview-link').on('click', function(e) {
+    $('#preview-note').text('Loading...');
+
+    var previewLinkText = ($(this).text() == 'Preview' ? 'Edit' : 'Preview');
+    $(this).text(previewLinkText);
+
+    var note = $('#note_note').val();
+    if (note.trim().length === 0) { note = 'Nothing to preview'; }
+    $.post($(this).attr('href'), {note: note}, function(data) {
+      $('#preview-note').html(data);
+    });
+
+    $('#preview-note, #note_note').toggle();
+    e.preventDefault();
   });
 });
 
@@ -116,6 +125,6 @@ function showDiff(link) {
 })(jQuery);
 
 
-function ajaxGet(url) { 
-  $.ajax({type: "GET", url: url, dataType: "script"}); 
+function ajaxGet(url) {
+  $.ajax({type: "GET", url: url, dataType: "script"});
 }

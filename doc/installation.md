@@ -60,7 +60,7 @@ Also read the [Read this before you submit an issue](https://github.com/gitlabhq
     sudo apt-get update
     sudo apt-get upgrade
 
-    sudo apt-get install -y wget curl gcc checkinstall libxml2-dev libxslt-dev sqlite3 libsqlite3-dev libcurl4-openssl-dev libreadline6-dev libc6-dev libssl-dev libmysql++-dev make build-essential zlib1g-dev libicu-dev redis-server openssh-server git-core python-dev python-pip libyaml-dev sendmail
+    sudo apt-get install -y wget curl gcc checkinstall libxml2-dev libxslt-dev sqlite3 libsqlite3-dev libcurl4-openssl-dev libreadline6-dev libc6-dev libssl-dev libmysql++-dev make build-essential zlib1g-dev libicu-dev redis-server openssh-server git-core python-dev python-pip libyaml-dev postfix
     
     # If you want to use MySQL:
     sudo apt-get install -y mysql-server mysql-client libmysqlclient-dev
@@ -133,7 +133,7 @@ Permissions:
 
 # 4. Install gitlab and configuration. Check status configuration.
 
-    sudo gem install charlock_holmes
+    sudo gem install charlock_holmes --version '0.6.8'
     sudo pip install pygments
     sudo gem install bundler
     cd /home/gitlab
@@ -152,8 +152,22 @@ Permissions:
 
     # Or 
     # Mysql
+    # Install MySQL as directed in Step #1
+    
+    # Login to MySQL
+    $ mysql -u root -p 
+    
+    # Create the gitlabhq production database
+    mysql> CREATE DATABASE IF NOT EXISTS `gitlabhq_production` DEFAULT CHARACTER SET `utf8` COLLATE `utf8_unicode_ci`;
+    
+    # Create the MySQL User change $password to a real password
+    mysql> CREATE USER 'gitlab'@'localhost' IDENTIFIED BY '$password'; 
+    
+    # Grant proper permissions to the MySQL User
+    mysql> GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER ON `gitlabhq_production`.* TO 'gitlab'@'localhost';
+    
+    # Exit MySQL Server and copy the example config, make sure to update username/password in config/database.yml
     sudo -u gitlab cp config/database.yml.example config/database.yml
-    # Change username/password of config/database.yml  to real one
 
 #### Install gems
 
@@ -162,6 +176,11 @@ Permissions:
 #### Setup DB
 
     sudo -u gitlab bundle exec rake gitlab:app:setup RAILS_ENV=production
+
+#### Setup gitlab hooks
+
+    sudo cp ./lib/hooks/post-receive /home/git/share/gitolite/hooks/common/post-receive
+    sudo chown git:git /home/git/share/gitolite/hooks/common/post-receive
     
 Checking status:
 
@@ -181,6 +200,7 @@ Checking status:
     Resolving deltas: 100% (174/174), done.
     Can clone gitolite-admin?............YES
     UMASK for .gitolite.rc is 0007? ............YES
+    /home/git/share/gitolite/hooks/common/post-receive exists? ............YES
 
 If you got all YES - congrats! You can go to next step.  
 
@@ -194,14 +214,20 @@ Application can be started with next command:
     # As daemon
     sudo -u gitlab bundle exec rails s -e production -d
 
+You can login via web using admin generated with setup:
+
+    admin@local.host
+    5iveL!fe
+
 #  6. Run resque process (for processing queue).
 
     # Manually
     sudo -u gitlab bundle exec rake environment resque:work QUEUE=* RAILS_ENV=production BACKGROUND=yes
 
     # Gitlab start script
-    ./resque.sh
-
+    sudo -u gitlab ./resque.sh
+    # if you run this as root /home/gitlab/gitlab/tmp/pids/resque_worker.pid will be owned by root
+    # causing the resque worker not to start via init script on next boot/service restart
 
 **Ok - we have a working application now. **
 **But keep going - there are some thing that should be done **
@@ -301,13 +327,11 @@ Create init script in /etc/init.d/gitlab:
       restart)
             echo -n "Restarting $DESC: "
             kill -USR2 `cat $PID`
-            kill -USR2 `cat $RESQUE_PID`
             echo "$NAME."
             ;;
       reload)
             echo -n "Reloading $DESC configuration: "
             kill -HUP `cat $PID`
-            kill -HUP `cat $RESQUE_PID`
             echo "$NAME."
             ;;
       *)

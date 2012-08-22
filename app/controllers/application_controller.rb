@@ -4,21 +4,22 @@ class ApplicationController < ActionController::Base
   before_filter :set_current_user_for_mailer
   before_filter :check_token_auth
   before_filter :set_current_user_for_observers
+  before_filter :dev_tools if Rails.env == 'development'
 
   protect_from_forgery
 
   helper_method :abilities, :can?
 
   rescue_from Gitlab::Gitolite::AccessDenied do |exception|
-    render "errors/gitolite", :layout => "error"
+    render "errors/gitolite", layout: "error"
   end
 
   rescue_from Encoding::CompatibilityError do |exception|
-    render "errors/encoding", :layout => "error", :status => 404
+    render "errors/encoding", layout: "error", status: 404
   end
 
   rescue_from ActiveRecord::RecordNotFound do |exception|
-    render "errors/not_found", :layout => "error", :status => 404
+    render "errors/not_found", layout: "error", status: 404
   end
 
   layout :layout_by_resource
@@ -96,15 +97,15 @@ class ApplicationController < ActionController::Base
   end
 
   def access_denied!
-    render "errors/access_denied", :layout => "error", :status => 404
+    render "errors/access_denied", layout: "error", status: 404
   end
 
   def not_found!
-    render "errors/not_found", :layout => "error", :status => 404
+    render "errors/not_found", layout: "error", status: 404
   end
 
   def git_not_found!
-    render "errors/git_not_found", :layout => "error", :status => 404
+    render "errors/git_not_found", layout: "error", status: 404
   end
 
   def method_missing(method_sym, *arguments, &block)
@@ -126,7 +127,7 @@ class ApplicationController < ActionController::Base
   end
 
   def render_404
-    render :file => File.join(Rails.root, "public", "404"), :layout => false, :status => "404"
+    render file: File.join(Rails.root, "public", "404"), layout: false, status: "404"
   end
 
   def require_non_empty_project
@@ -141,5 +142,9 @@ class ApplicationController < ActionController::Base
 
   def render_full_content
     @full_content = true
+  end
+
+  def dev_tools
+    Rack::MiniProfiler.authorize_request
   end
 end

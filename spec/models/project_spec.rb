@@ -11,7 +11,7 @@ describe Project do
     it { should have_many(:issues).dependent(:destroy) }
     it { should have_many(:notes).dependent(:destroy) }
     it { should have_many(:snippets).dependent(:destroy) }
-    it { should have_many(:web_hooks).dependent(:destroy) }
+    it { should have_many(:hooks).dependent(:destroy) }
     it { should have_many(:deploy_keys).dependent(:destroy) }
   end
 
@@ -22,21 +22,55 @@ describe Project do
   end
 
   describe "Respond to" do
-    it { should respond_to(:repository_writers) }
-    it { should respond_to(:add_access) }
-    it { should respond_to(:reset_access) }
-    it { should respond_to(:update_repository) }
-    it { should respond_to(:destroy_repository) }
     it { should respond_to(:public?) }
     it { should respond_to(:private?) }
     it { should respond_to(:url_to_repo) }
     it { should respond_to(:path_to_repo) }
     it { should respond_to(:valid_repo?) }
     it { should respond_to(:repo_exists?) }
+
+    # Repository Role
+    it { should respond_to(:tree) }
+    it { should respond_to(:root_ref) }
     it { should respond_to(:repo) }
     it { should respond_to(:tags) }
     it { should respond_to(:commit) }
+    it { should respond_to(:commits) }
     it { should respond_to(:commits_between) }
+    it { should respond_to(:commits_with_refs) }
+    it { should respond_to(:commits_since) }
+    it { should respond_to(:commits_between) }
+    it { should respond_to(:satellite) }
+    it { should respond_to(:update_repository) }
+    it { should respond_to(:destroy_repository) }
+    it { should respond_to(:archive_repo) }
+
+    # Authority Role
+    it { should respond_to(:add_access) }
+    it { should respond_to(:reset_access) }
+    it { should respond_to(:repository_writers) }
+    it { should respond_to(:repository_masters) }
+    it { should respond_to(:repository_readers) }
+    it { should respond_to(:allow_read_for?) }
+    it { should respond_to(:guest_access_for?) }
+    it { should respond_to(:report_access_for?) }
+    it { should respond_to(:dev_access_for?) }
+    it { should respond_to(:master_access_for?) }
+
+    # Team Role
+    it { should respond_to(:team_member_by_name_or_email) }
+    it { should respond_to(:team_member_by_id) }
+    it { should respond_to(:add_user_to_team) }
+    it { should respond_to(:add_users_to_team) }
+    it { should respond_to(:add_user_id_to_team) }
+    it { should respond_to(:add_users_ids_to_team) }
+
+    # Project Push Role
+    it { should respond_to(:observe_push) }
+    it { should respond_to(:update_merge_requests) }
+    it { should respond_to(:execute_hooks) }
+    it { should respond_to(:post_receive_data) }
+    it { should respond_to(:trigger_post_receive) }
   end
 
   it "should not allow 'gitolite-admin' as repo name" do
@@ -45,17 +79,17 @@ describe Project do
   end
 
   it "should return valid url to repo" do
-    project = Project.new(:path => "somewhere")
+    project = Project.new(path: "somewhere")
     project.url_to_repo.should == Gitlab.config.ssh_path + "somewhere.git"
   end
 
   it "should return path to repo" do
-    project = Project.new(:path => "somewhere")
+    project = Project.new(path: "somewhere")
     project.path_to_repo.should == File.join(Rails.root, "tmp", "tests", "somewhere")
   end
 
   it "returns the full web URL for this repo" do
-    project = Project.new(:code => "somewhere")
+    project = Project.new(code: "somewhere")
     project.web_url.should == "#{Gitlab.config.url}/somewhere"
   end
 
@@ -66,7 +100,7 @@ describe Project do
     end
 
     it "should be invalid repo" do
-      project = Project.new(:name => "ok_name", :path => "/INVALID_PATH/", :code => "NEOK")
+      project = Project.new(name: "ok_name", path: "/INVALID_PATH/", code: "NEOK")
       project.valid_repo?.should be_false
     end
   end
@@ -86,7 +120,7 @@ describe Project do
     let(:project)    { Factory :project }
 
     it 'returns the creation date of the project\'s last event if present' do
-      last_event = double(:created_at => 'now')
+      last_event = double(created_at: 'now')
       project.stub(:events).and_return( [double, double, last_event] )
       project.last_activity_date.should == last_event.created_at
     end
@@ -126,7 +160,7 @@ describe Project do
       end
 
       it "should return nil" do
-        lambda { Project.new(:path => "invalid").repo }.should raise_error(Grit::NoSuchPathError)
+        lambda { Project.new(path: "invalid").repo }.should raise_error(Grit::NoSuchPathError)
       end
 
       it "should return nil" do
@@ -179,10 +213,10 @@ describe Project do
 
     before do
       @merge_request = Factory :merge_request,
-        :project => project,
-        :merged => false,
-        :closed => false
-      @key = Factory :key, :user_id => project.owner.id
+        project: project,
+        merged: false,
+        closed: false
+      @key = Factory :key, user_id: project.owner.id
     end
 
     it "should close merge request if last commit from source branch was pushed to target branch" do

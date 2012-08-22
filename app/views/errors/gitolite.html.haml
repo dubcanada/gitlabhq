@@ -1,18 +1,24 @@
-.alert-message.block-message.error
-  %h3 Gitolite Error
-  %hr
-  %h4 Application cant get access to your gitolite system.
+%h1 Git Error
+%hr
+%h2 Gitlab was unable to access your Gitolite system.
+
+.git_error_tips
+  %h4 Tips for Administrator:
   %ol
     %li
       %p
-        Check 'config/gitlab.yml' for correct settings.
+        Check git logs in admin area
     %li
       %p
-        Make sure web server user has access to gitolite.
-        %a{:href => "https://github.com/gitlabhq/gitlabhq/wiki/Gitolite"} Setup tutorial
+        Check config/gitlab.yml for correct settings.
     %li
       %p
-        Try:
+        Diagnostic tool:
+        %pre
+          bundle exec rake gitlab:app:status RAILS_ENV=production
+    %li
+      %p
+        Permissions:
       %pre
         = preserve do
           sudo chmod -R 770 /home/git/repositories/

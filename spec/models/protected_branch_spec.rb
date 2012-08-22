@@ -24,7 +24,7 @@ describe ProtectedBranch do
   end
 
   describe 'Callbacks' do
-    subject { ProtectedBranch.new(:project => project, :name => 'branch_name') }
+    subject { ProtectedBranch.new(project: project, name: 'branch_name') }
 
     it 'call update_repository after save' do
       subject.should_receive(:update_repository)
@@ -37,21 +37,8 @@ describe ProtectedBranch do
     end
   end
 
-  describe '#update_repository' do
-    let(:gitolite) { mock }
-
-    subject { ProtectedBranch.new(:project => project) }
-
-    it "updates the branch's project repo permissions" do
-      Gitlab::GitHost.should_receive(:system).and_return(gitolite)
-      gitolite.should_receive(:update_project).with(project.path, project)
-
-      subject.update_repository
-    end
-  end
-
   describe '#commit' do
-    subject { ProtectedBranch.new(:project => project, :name => 'cant_touch_this') }
+    subject { ProtectedBranch.new(project: project, name: 'cant_touch_this') }
 
     it 'commits itself to its project' do
       project.should_receive(:commit).with('cant_touch_this')

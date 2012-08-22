@@ -9,7 +9,7 @@ class CommitsController < ApplicationController
   before_filter :authorize_read_project!
   before_filter :authorize_code_access!
   before_filter :require_non_empty_project
-  before_filter :load_refs, :only => :index # load @branch, @tag & @ref
+  before_filter :load_refs, only: :index # load @branch, @tag & @ref
   before_filter :render_full_content
 
   def index
@@ -17,52 +17,44 @@ class CommitsController < ApplicationController
     @limit, @offset = (params[:limit] || 40), (params[:offset] || 0)
 
     @commits = @project.commits(@ref, params[:path], @limit, @offset)
+    @commits = CommitDecorator.decorate(@commits)
 
     respond_to do |format|
       format.html # index.html.erb
       format.js
-      format.atom { render :layout => false }
+      format.atom { render layout: false }
     end
   end
 
   def show
-    @commit = project.commit(params[:id])
+    result = CommitLoad.new(project, current_user, params).execute
 
-    git_not_found! and return unless @commit
+    @commit = result[:commit]
 
-    @commit = CommitDecorator.decorate(@commit)
-
-    @note = @project.build_commit_note(@commit)
-    @comments_allowed = true
-    @line_notes = project.commit_line_notes(@commit)
-
-    @notes_count = @line_notes.count + project.commit_notes(@commit).count
-
-    if @commit.diffs.size > 200 && !params[:force_show_diff]
-      @suppress_diff = true 
+    if @commit
+      @suppress_diff = result[:suppress_diff]
+      @note          = result[:note]
+      @line_notes    = result[:line_notes]
+      @notes_count   = result[:notes_count]
+      @comments_allowed = true
+    else
+      return git_not_found!
     end
-  rescue Grit::Git::GitTimeout
-    render "huge_commit"
+
+    if result[:status] == :huge_commit
+      render "huge_commit" and return
+    end
   end
 
   def compare
-    first = project.commit(params[:to].try(:strip))
-    last = project.commit(params[:from].try(:strip))
+    result = Commit.compare(project, params[:from], params[:to])
 
-    @diffs = []
-    @commits = []
+    @commits = result[:commits]
+    @commit  = result[:commit]
+    @diffs   = result[:diffs]
     @line_notes = []
 
-    if first && last
-      commits = [first, last].sort_by(&:created_at)
-      younger = commits.first
-      older = commits.last
-
-
-      @commits = project.repo.commits_between(younger.id, older.id).map {|c| Commit.new(c)}
-      @diffs = project.repo.diff(younger.id, older.id) rescue []
-      @commit = Commit.new(older)
-    end
+    @commits = CommitDecorator.decorate(@commits)
   end
 
   def patch
@@ -70,9 +62,9 @@ class CommitsController < ApplicationController
     
     send_data(
       @commit.to_patch,
-      :type => "text/plain",
-      :disposition => 'attachment',
-      :filename => (@commit.id.to_s + ".patch")
+      type: "text/plain",
+      disposition: 'attachment',
+      filename: (@commit.id.to_s + ".patch")
     )
   end
 end

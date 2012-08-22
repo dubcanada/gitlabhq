@@ -4,8 +4,8 @@
     - @notes.each do |note|
       %tr
         %td
-          %a{:href => note.attachment.url}
-            = image_tag gravatar_icon(note.author_email), :class => "left", :width => 16
+          %a{href: note.attachment.url}
+            = image_tag gravatar_icon(note.author_email), class: "left", width: 16
             &nbsp;
             = note.attachment_identifier
         %td
@@ -14,6 +14,6 @@
           ago
 - else
   .alert-message.block-message
-    %p All files attached to project wall, issues etc will be displayed here
+    %span All files attached to project wall, issues etc will be displayed here
 
 

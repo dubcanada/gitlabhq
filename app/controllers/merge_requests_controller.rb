@@ -2,9 +2,9 @@ class MergeRequestsController < ApplicationController
   before_filter :authenticate_user!
   before_filter :project
   before_filter :module_enabled
-  before_filter :merge_request, :only => [:edit, :update, :destroy, :show, :commits, :diffs, :automerge, :automerge_check, :raw]
-  before_filter :validates_merge_request, :only => [:show, :diffs, :raw]
-  before_filter :define_show_vars, :only => [:show, :diffs]
+  before_filter :merge_request, only: [:edit, :update, :destroy, :show, :commits, :diffs, :automerge, :automerge_check, :raw]
+  before_filter :validates_merge_request, only: [:show, :diffs, :raw]
+  before_filter :define_show_vars, only: [:show, :diffs]
   layout "project"
 
   # Authorize
@@ -14,26 +14,17 @@ class MergeRequestsController < ApplicationController
   before_filter :authorize_read_merge_request!
 
   # Allow write(create) merge_request
-  before_filter :authorize_write_merge_request!, :only => [:new, :create]
+  before_filter :authorize_write_merge_request!, only: [:new, :create]
 
   # Allow modify merge_request
-  before_filter :authorize_modify_merge_request!, :only => [:close, :edit, :update, :sort]
+  before_filter :authorize_modify_merge_request!, only: [:close, :edit, :update, :sort]
 
   # Allow destroy merge_request
-  before_filter :authorize_admin_merge_request!, :only => [:destroy]
+  before_filter :authorize_admin_merge_request!, only: [:destroy]
 
 
   def index
-    @merge_requests = @project.merge_requests
-
-    @merge_requests = case params[:f].to_i
-                      when 1 then @merge_requests
-                      when 2 then @merge_requests.closed
-                      when 3 then @merge_requests.opened.assigned(current_user)
-                      else @merge_requests.opened
-                      end.page(params[:page]).per(20)
-
-    @merge_requests = @merge_requests.includes(:author, :project).order("closed, created_at desc")
+    @merge_requests = MergeRequestsLoad.new(project, current_user, params).execute
   end
 
   def show
@@ -75,7 +66,7 @@ class MergeRequestsController < ApplicationController
   end
 
   def update
-    if @merge_request.update_attributes(params[:merge_request].merge(:author_id_of_changes => current_user.id))
+    if @merge_request.update_attributes(params[:merge_request].merge(author_id_of_changes: current_user.id))
       @merge_request.reload_code
       @merge_request.mark_as_unchecked
       redirect_to [@project, @merge_request], notice: 'Merge request was successfully updated.'
@@ -88,7 +79,7 @@ class MergeRequestsController < ApplicationController
     if @merge_request.unchecked? 
       @merge_request.check_if_can_be_merged
     end
-    render :json => {:state => @merge_request.human_state}
+    render json: {state: @merge_request.human_state}
   end
 
   def automerge
@@ -147,10 +138,11 @@ class MergeRequestsController < ApplicationController
 
   def define_show_vars
     # Build a note object for comment form
-    @note = @project.notes.new(:noteable => @merge_request)
+    @note = @project.notes.new(noteable: @merge_request)
 
     # Get commits from repository 
     # or from cache if already merged
     @commits = @merge_request.commits
+    @commits = CommitDecorator.decorate(@commits)
   end
 end

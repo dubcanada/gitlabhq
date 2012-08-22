@@ -1,6 +1,6 @@
 module Account 
   def identifier
-    email.gsub /[@.]/, "_"
+    email.gsub /[^[:alnum:]]/, "_"
   end
 
   def is_admin?
@@ -24,7 +24,7 @@ module Account
   end
 
   def cared_merge_requests
-    MergeRequest.where("author_id = :id or assignee_id = :id", :id => self.id).opened
+    MergeRequest.where("author_id = :id or assignee_id = :id", id: self.id).opened
   end
 
   def project_ids
@@ -50,9 +50,13 @@ module Account
   def recent_push project_id = nil
     # Get push events not earlier than 2 hours ago
     events = recent_events.code_push.where("created_at > ?", Time.now - 2.hours)
-    events = events.where(:project_id => project_id) if project_id
+    events = events.where(project_id: project_id) if project_id
 
     # Take only latest one
     events = events.recent.limit(1).first
+  end
+
+  def projects_with_events
+    projects.includes(:events).order("events.created_at DESC")
   end
 end

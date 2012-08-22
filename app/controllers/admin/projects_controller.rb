@@ -2,21 +2,18 @@ class Admin::ProjectsController < ApplicationController
   layout "admin"
   before_filter :authenticate_user!
   before_filter :authenticate_admin!
+  before_filter :admin_project, only: [:edit, :show, :update, :destroy, :team_update]
 
   def index
     @admin_projects = Project.scoped
     @admin_projects = @admin_projects.search(params[:name]) if params[:name].present?
-    @admin_projects = @admin_projects.page(params[:page])
+    @admin_projects = @admin_projects.page(params[:page]).per(20)
   end
 
   def show
-    @admin_project = Project.find_by_code(params[:id])
-
-    @users = if @admin_project.users.empty?
-               User
-             else
-               User.not_in_project(@admin_project)
-             end.all
+    @users = User.scoped
+    @users = @users.not_in_project(@admin_project) if @admin_project.users.present?
+    @users = @users.all
   end
 
   def new
@@ -24,19 +21,10 @@ class Admin::ProjectsController < ApplicationController
   end
 
   def edit
-    @admin_project = Project.find_by_code(params[:id])
   end
 
   def team_update
-    @admin_project = Project.find_by_code(params[:id])
-
-    UsersProject.bulk_import(
-      @admin_project, 
-      params[:user_ids],
-      params[:project_access]
-    )
-
-    @admin_project.update_repository
+    @admin_project.add_users_ids_to_team(params[:user_ids], params[:project_access])
 
     redirect_to [:admin, @admin_project], notice: 'Project was successfully updated.'
   end
@@ -45,37 +33,14 @@ class Admin::ProjectsController < ApplicationController
     @admin_project = Project.new(params[:project])
     @admin_project.owner = current_user
 
-    Project.transaction do
-      @admin_project.save!
-      @admin_project.users_projects.create!(:project_access => UsersProject::MASTER, :user => current_user)
-
-      # when project saved no team member exist so
-      # project repository should be updated after first user add
-      @admin_project.update_repository
-    end
-
-    respond_to do |format|
-      if @admin_project.valid?
-        format.html { redirect_to @admin_project, notice: 'Project was successfully created.' }
-        format.js
-      else
-        format.html { render action: "new" }
-        format.js
-      end
-    end
-  rescue Gitlabhq::Gitolite::AccessDenied
-    render :js => "location.href = '#{errors_githost_path}'" and return
-  rescue StandardError => ex
-    @admin_project.errors.add(:base, "Cant save project. Please try again later")
-    respond_to do |format|
-      format.html { render action: "new" }
-      format.js
+    if @admin_project.save
+      redirect_to [:admin, @admin_project], notice: 'Project was successfully created.'
+    else
+      render action: "new"
     end
   end
 
   def update
-    @admin_project = Project.find_by_code(params[:id])
-
     owner_id = params[:project].delete(:owner_id)
 
     if owner_id 
@@ -85,14 +50,19 @@ class Admin::ProjectsController < ApplicationController
     if @admin_project.update_attributes(params[:project])
       redirect_to [:admin, @admin_project], notice: 'Project was successfully updated.'
     else
-      render :action => "edit"
+      render action: "edit"
     end
   end
 
   def destroy
-    @admin_project = Project.find_by_code(params[:id])
     @admin_project.destroy
 
-    redirect_to admin_projects_url
+    redirect_to admin_projects_url, notice: 'Project was successfully deleted.'
+  end
+
+  private 
+
+  def admin_project
+    @admin_project = Project.find_by_code(params[:id])
   end
 end

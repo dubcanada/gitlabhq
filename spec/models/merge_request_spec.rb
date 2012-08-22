@@ -21,17 +21,17 @@ describe MergeRequest do
   end
 
   it { Factory.create(:merge_request,
-                      :author => Factory(:user),
-                      :assignee => Factory(:user),
-                      :project => Factory.create(:project)).should be_valid }
+                      author: Factory(:user),
+                      assignee: Factory(:user),
+                      project: Factory.create(:project)).should be_valid }
 
   describe "plus 1" do
     let(:project) { Factory(:project) }
     subject {
       Factory.create(:merge_request,
-                     :author => Factory(:user),
-                     :assignee => Factory(:user),
-                     :project => project)
+                     author: Factory(:user),
+                     assignee: Factory(:user),
+                     project: project)
     }
 
     it "with no notes has a 0/0 score" do
@@ -54,6 +54,15 @@ describe MergeRequest do
       subject.notes << Factory(:note, note: "+1 This is awesome", project: Factory(:project, path: 'plusone', code: 'plusone'))
       subject.notes << Factory(:note, note: "+1 I want this", project: Factory(:project, path: 'plustwo', code: 'plustwo'))
       subject.upvotes.should == 2
+    end
+  end
+
+  describe ".search" do
+    let!(:issue) { Factory.create(:issue, title: "Searchable issue",
+                                 project: Factory.create(:project)) }
+
+    it "matches by title" do
+      Issue.search('able').all.should == [issue]
     end
   end
 end

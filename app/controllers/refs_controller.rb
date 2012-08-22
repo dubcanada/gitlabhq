@@ -9,7 +9,7 @@ class RefsController < ApplicationController
   before_filter :require_non_empty_project
 
   before_filter :ref
-  before_filter :define_tree_vars, :only => [:tree, :blob, :blame, :logs_tree]
+  before_filter :define_tree_vars, only: [:tree, :blob, :blame, :logs_tree]
   before_filter :render_full_content
 
   layout "project"
@@ -20,7 +20,7 @@ class RefsController < ApplicationController
         new_path = if params[:destination] == "tree"
                      tree_project_ref_path(@project, params[:ref]) 
                    else
-                     project_commits_path(@project, :ref => params[:ref])
+                     project_commits_path(@project, ref: params[:ref])
                    end
 
         redirect_to new_path 
@@ -51,9 +51,10 @@ class RefsController < ApplicationController
     @logs = contents.map do |content|
       file = params[:path] ? File.join(params[:path], content.name) : content.name
       last_commit = @project.commits(@commit.id, file, 1).last
-      { 
-        :file_name => content.name, 
-        :commit => last_commit
+      last_commit = CommitDecorator.decorate(last_commit)
+      {
+        file_name: content.name, 
+        commit: last_commit
       }
     end
   end
@@ -69,9 +70,9 @@ class RefsController < ApplicationController
 
       send_data(
         @tree.data,
-        :type => mime_type,
-        :disposition => 'inline',
-        :filename => @tree.name
+        type: mime_type,
+        disposition: 'inline',
+        filename: @tree.name
       )
     else
       head(404)
@@ -89,6 +90,7 @@ class RefsController < ApplicationController
 
     @repo = project.repo
     @commit = project.commit(@ref)
+    @commit = CommitDecorator.decorate(@commit)
     @tree = Tree.new(@commit.tree, project, @ref, params[:path])
     @tree = TreeDecorator.new(@tree)
     @hex_path = Digest::SHA1.hexdigest(params[:path] || "/")

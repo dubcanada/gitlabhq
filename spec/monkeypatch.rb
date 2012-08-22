@@ -35,7 +35,7 @@ class UsersProject
 end
 
 class FakeSatellite
-  def exists? 
+  def exists?
     true
   end
 
@@ -44,4 +44,8 @@ class FakeSatellite
   end
 end
 
-
+class ProtectedBranch
+  def update_repository
+    true
+  end
+end

@@ -34,6 +34,7 @@ class MailerObserver < ActiveRecord::Observer
       case note.noteable_type
       when "Commit"; Notify.note_commit_email(u.id, note.id).deliver
       when "Issue";  Notify.note_issue_email(u.id, note.id).deliver
+      when "Wiki";  Notify.note_wiki_email(u.id, note.id).deliver
       when "MergeRequest"; Notify.note_merge_request_email(u.id, note.id).deliver
       when "Snippet"; true
       else
@@ -70,7 +71,7 @@ class MailerObserver < ActiveRecord::Observer
 
     # Create comment about status changed
     if target.closed_changed?
-      note = Note.new(:noteable => target, :project => target.project)
+      note = Note.new(noteable: target, project: target.project)
       note.author = current_user
       note.note = "_Status changed to #{target.closed ? 'closed' : 'reopened'}_"
       note.save()

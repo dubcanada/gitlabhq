@@ -5,10 +5,11 @@ class TeamMembersController < ApplicationController
   # Authorize
   before_filter :add_project_abilities
   before_filter :authorize_read_project!
-  before_filter :authorize_admin_project!, :except => [:show]
+  before_filter :authorize_admin_project!, except: [:show]
 
   def show
     @team_member = project.users_projects.find(params[:id])
+    @events = @team_member.user.recent_events.where(:project_id => @project.id).limit(7)
   end
 
   def new
@@ -41,7 +42,7 @@ class TeamMembersController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to team_project_path(@project) }
-      format.js { render :nothing => true }
+      format.js { render nothing: true }
     end
   end
 end

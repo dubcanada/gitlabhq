@@ -3,8 +3,8 @@ require 'spec_helper'
 describe "Admin::Projects" do
   before do
     @project = Factory :project,
-      :name => "LeGiT",
-      :code => "LGT"
+      name: "LeGiT",
+      code: "LGT"
     login_as :admin
   end
 
@@ -41,15 +41,15 @@ describe "Admin::Projects" do
     end
 
     it "should have project edit page" do
-      page.should have_content("Name")
-      page.should have_content("Code")
+      page.should have_content("Project name")
+      page.should have_content("URL")
     end
 
     describe "Update project" do
       before do
-        fill_in "project_name", :with => "Big Bang"
-        fill_in "project_code", :with => "BB1"
-        click_button "Save"
+        fill_in "project_name", with: "Big Bang"
+        fill_in "project_code", with: "BB1"
+        click_button "Save Project"
         @project.reload
       end
 
@@ -76,20 +76,19 @@ describe "Admin::Projects" do
     end
 
     it "should have labels for new project" do
-      page.should have_content("Name")
-      page.should have_content("Path")
-      page.should have_content("Description")
+      page.should have_content("Project name is")
+      page.should have_content("Git Clone")
+      page.should have_content("URL")
     end
   end
 
   describe "POST /admin/projects" do
     before do
       visit new_admin_project_path
-      fill_in 'Name', :with => 'NewProject'
-      fill_in 'Code', :with => 'NPR'
-      fill_in 'Path', :with => 'gitlabhq_1'
-      fill_in 'Description', :with => 'New Project Description'
-      expect { click_button "Save" }.to change { Project.count }.by(1)
+      fill_in 'project_name', with: 'NewProject'
+      fill_in 'project_code', with: 'NPR'
+      fill_in 'project_path', with: 'gitlabhq_1'
+      expect { click_button "Create project" }.to change { Project.count }.by(1)
       @project = Project.last
     end
 
@@ -100,7 +99,6 @@ describe "Admin::Projects" do
     it "should show project" do
       page.should have_content(@project.name)
       page.should have_content(@project.path)
-      page.should have_content(@project.description)
     end
   end
 
@@ -111,7 +109,7 @@ describe "Admin::Projects" do
     end
 
     it "should create new user" do 
-      select @new_user.name, :from => "user_ids"
+      select @new_user.name, from: "user_ids"
       expect { click_button "Add" }.to change { UsersProject.count }.by(1)
       page.should have_content @new_user.name
       current_path.should == admin_project_path(@project)
