@@ -88,8 +88,11 @@ class MergeRequest < ActiveRecord::Base
   end
 
   def unmerged_diffs
-    commits = project.repo.commits_between(target_branch, source_branch).map {|c| Commit.new(c)}
-    diffs = project.repo.diff(commits.first.prev_commit.id, commits.last.id) rescue []
+    # Only show what is new in the source branch compared to the target branch, not the other way around.
+    # The linex below with merge_base is equivalent to diff with three dots (git diff branch1...branch2)
+    # From the git documentation: "git diff A...B" is equivalent to "git diff $(git-merge-base A B) B"
+    common_commit = project.repo.git.native(:merge_base, {}, [target_branch, source_branch]).strip
+    diffs = project.repo.diff(common_commit, source_branch)
   end
 
   def last_commit
@@ -159,7 +162,7 @@ class MergeRequest < ActiveRecord::Base
   end
 
   def automerge!(current_user)
-    if Gitlab::Merge.new(self, current_user).merge
+    if Gitlab::Merge.new(self, current_user).merge && self.unmerged_commits.empty?
       self.merge!(current_user.id)
       true
     end

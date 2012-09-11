@@ -61,7 +61,7 @@ class ProjectsController < ApplicationController
 
     respond_to do |format|
       format.html do
-         if @project.repo_exists? && @project.has_commits?
+         unless @project.empty_repo?
            @last_push = current_user.recent_push(@project.id)
            render :show
          else
