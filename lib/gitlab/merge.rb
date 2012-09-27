@@ -21,15 +21,14 @@ module Gitlab
         if output =~ /CONFLICT/
           false  
         else 
-          repo.git.push({}, "origin", merge_request.target_branch)
-          true
+          !!repo.git.push({}, "origin", merge_request.target_branch)
         end
       end
     end
 
     def process
       Grit::Git.with_timeout(30.seconds) do
-        lock_file = File.join(Rails.root, "tmp", "merge_repo_#{project.path}.lock")
+        lock_file = Rails.root.join("tmp", "merge_repo_#{project.path}.lock")
 
         File.open(lock_file, "w+") do |f|
           f.flock(File::LOCK_EX)
@@ -37,7 +36,7 @@ module Gitlab
           unless project.satellite.exists?
             raise "You should run: rake gitlab:app:enable_automerge"
           end
-          
+
           project.satellite.clear
 
           Dir.chdir(project.satellite.path) do

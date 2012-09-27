@@ -57,17 +57,18 @@ class ProjectsController < ApplicationController
 
   def show
     limit = (params[:limit] || 20).to_i
-    @events = @project.events.recent.limit(limit)
+    @events = @project.events.recent.limit(limit).offset(params[:offset] || 0)
 
     respond_to do |format|
       format.html do
-         if @project.repo_exists? && @project.has_commits?
+         unless @project.empty_repo?
            @last_push = current_user.recent_push(@project.id)
            render :show
          else
            render "projects/empty"
          end
       end
+      format.js
     end
   end
 

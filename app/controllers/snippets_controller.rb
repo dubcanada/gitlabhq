@@ -1,5 +1,4 @@
 class SnippetsController < ApplicationController
-  before_filter :authenticate_user!
   before_filter :project
   before_filter :snippet, only: [:show, :edit, :destroy, :update, :raw]
   layout "project"
@@ -56,7 +55,6 @@ class SnippetsController < ApplicationController
 
   def show
     @note = @project.notes.new(noteable: @snippet)
-    render_full_content
   end
 
   def destroy

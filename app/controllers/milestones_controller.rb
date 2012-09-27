@@ -1,5 +1,4 @@
 class MilestonesController < ApplicationController
-  before_filter :authenticate_user!
   before_filter :project
   before_filter :module_enabled
   before_filter :milestone, only: [:edit, :update, :destroy, :show]
@@ -17,8 +16,8 @@ class MilestonesController < ApplicationController
   respond_to :html
 
   def index
-    @milestones = case params[:f].to_i
-                  when 1; @project.milestones
+    @milestones = case params[:f]
+                  when 'all'; @project.milestones
                   else @project.milestones.active
                   end
 

@@ -3,8 +3,6 @@ module IssueCommonality
   extend ActiveSupport::Concern
 
   included do
-    attr_protected :author, :author_id, :project, :project_id
-
     belongs_to :project
     belongs_to :author, class_name: "User"
     belongs_to :assignee, class_name: "User"
@@ -16,7 +14,7 @@ module IssueCommonality
     validates :title,
               presence: true,
               length: { within: 0..255 }
-
+    validates :closed, inclusion: { in: [true, false] }
 
     scope :opened, where(closed: false)
     scope :closed, where(closed: true)

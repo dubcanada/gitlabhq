@@ -1,8 +1,11 @@
-require File.join(Rails.root, "app/models/commit")
+require Rails.root.join("app/models/commit")
 
 class MergeRequest < ActiveRecord::Base
   include IssueCommonality
-  include Upvote
+  include Votes
+
+  attr_accessible :title, :assignee_id, :closed, :target_branch, :source_branch,
+                  :author_id_of_changes
 
   BROKEN_DIFF = "--broken-diff"
 
@@ -15,8 +18,7 @@ class MergeRequest < ActiveRecord::Base
 
   attr_accessor :should_remove_source_branch
 
-  validates_presence_of :source_branch
-  validates_presence_of :target_branch
+  validates_presence_of :source_branch, :target_branch
   validate :validate_branches
 
   def self.find_all_by_branch(branch_name)
@@ -48,7 +50,8 @@ class MergeRequest < ActiveRecord::Base
   end
 
   def mark_as_unchecked
-    self.update_attributes(state: UNCHECKED)
+    self.state = UNCHECKED
+    self.save
   end
 
   def can_be_merged?
@@ -88,8 +91,11 @@ class MergeRequest < ActiveRecord::Base
   end
 
   def unmerged_diffs
-    commits = project.repo.commits_between(target_branch, source_branch).map {|c| Commit.new(c)}
-    diffs = project.repo.diff(commits.first.prev_commit.id, commits.last.id) rescue []
+    # Only show what is new in the source branch compared to the target branch, not the other way around.
+    # The linex below with merge_base is equivalent to diff with three dots (git diff branch1...branch2)
+    # From the git documentation: "git diff A...B" is equivalent to "git diff $(git-merge-base A B) B"
+    common_commit = project.repo.git.native(:merge_base, {}, [target_branch, source_branch]).strip
+    diffs = project.repo.diff(common_commit, source_branch)
   end
 
   def last_commit
@@ -159,7 +165,7 @@ class MergeRequest < ActiveRecord::Base
   end
 
   def automerge!(current_user)
-    if Gitlab::Merge.new(self, current_user).merge
+    if Gitlab::Merge.new(self, current_user).merge && self.unmerged_commits.empty?
       self.merge!(current_user.id)
       true
     end
@@ -180,23 +186,23 @@ class MergeRequest < ActiveRecord::Base
     patch_path
   end
 end
+
 # == Schema Information
 #
 # Table name: merge_requests
 #
-#  id            :integer(4)      not null, primary key
+#  id            :integer         not null, primary key
 #  target_branch :string(255)     not null
 #  source_branch :string(255)     not null
-#  project_id    :integer(4)      not null
-#  author_id     :integer(4)
-#  assignee_id   :integer(4)
+#  project_id    :integer         not null
+#  author_id     :integer
+#  assignee_id   :integer
 #  title         :string(255)
-#  closed        :boolean(1)      default(FALSE), not null
+#  closed        :boolean         default(FALSE), not null
 #  created_at    :datetime        not null
 #  updated_at    :datetime        not null
 #  st_commits    :text(2147483647
 #  st_diffs      :text(2147483647
-#  merged        :boolean(1)      default(FALSE), not null
-#  state         :integer(4)      default(1), not null
+#  merged        :boolean         default(FALSE), not null
+#  state         :integer         default(1), not null
 #
-

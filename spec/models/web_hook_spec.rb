@@ -5,6 +5,10 @@ describe ProjectHook do
     it { should belong_to :project }
   end
 
+  describe "Mass assignment" do
+    it { should_not allow_mass_assignment_of(:project_id) }
+  end
+
   describe "Validations" do
     it { should validate_presence_of(:url) }
 
@@ -52,14 +56,3 @@ describe ProjectHook do
     end
   end
 end
-# == Schema Information
-#
-# Table name: web_hooks
-#
-#  id         :integer(4)      not null, primary key
-#  url        :string(255)
-#  project_id :integer(4)
-#  created_at :datetime        not null
-#  updated_at :datetime        not null
-#
-
