@@ -47,6 +47,12 @@ FactoryGirl.define do
     owner
   end
 
+  factory :group do
+    sequence(:name) { |n| "group#{n}" }
+    code { name.downcase.gsub(/\s/, '_') }
+    owner
+  end
+
   factory :users_project do
     user
     project
@@ -78,16 +84,18 @@ FactoryGirl.define do
   end
 
   factory :event do
+    factory :closed_issue_event do
+      project
+      action Event::Closed
+      target factory: :closed_issue
+      author factory: :user
+    end
   end
 
   factory :key do
     title
     key do
-      """
-      ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAIEAiPWx6WM4lhHNedGfBpPJNPpZ7yKu+dnn1SJejgt4
-      596k6YjzGGphH2TUxwKzxcKDKKezwkpfnxPkSMkuEspGRt/aZZ9wa++Oi7Qkr8prgHc4
-      soW6NUlfDzpvZK2H5E7eQaSeP3SAwGmQKUFHCddNaP0L+hM7zhFNzjFvpaMgJw0=
-      """
+      "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAIEAiPWx6WM4lhHNedGfBpPJNPpZ7yKu+dnn1SJejgt4596k6YjzGGphH2TUxwKzxcKDKKezwkpfnxPkSMkuEspGRt/aZZ9wa++Oi7Qkr8prgHc4soW6NUlfDzpvZK2H5E7eQaSeP3SAwGmQKUFHCddNaP0L+hM7zhFNzjFvpaMgJw0="
     end
 
     factory :deploy_key do
@@ -96,6 +104,12 @@ FactoryGirl.define do
 
     factory :personal_key do
       user
+    end
+
+    factory :key_with_a_space_in_the_middle do
+      key do
+        "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAIEAiPWx6WM4lhHNedGfBpPJNPpZ7yKu+dnn1SJejgt4596k6YjzGGphH2TUxwKzxcKDKKezwkpfnxPkSMkuEspGRt/aZZ9wa ++Oi7Qkr8prgHc4soW6NUlfDzpvZK2H5E7eQaSeP3SAwGmQKUFHCddNaP0L+hM7zhFNzjFvpaMgJw0="
+      end
     end
   end
 
